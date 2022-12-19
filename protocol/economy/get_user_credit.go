@@ -16,3 +16,12 @@ type GetUserCreditResponse struct {
 	//用户唯一标识符（可能是UUID/XUID)
 	UserID string `json:"user_id"`
 }
+
+func CreateGetUserCreditRequest(UserID string) *PacketBase {
+	return &PacketBase{
+		MessageType: Eco_Get_Credit_Request,
+		Data: &GetUserCreditRequest{
+			UserID: UserID,
+		},
+	}
+}

@@ -4,48 +4,47 @@ import (
 	"GolangWsLibrary/protocol/economy"
 	"GolangWsLibrary/utils"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
 )
+
+const URL = "wss://sh3.ifine.eu:10000/socket"
+
+var GlobalClient *Client
 
 type Client struct {
 	conn *websocket.Conn
 }
 
-func sendRequest[T interface{}](c *Client, jsonStruct interface{}) T {
+func SendRequest[T interface{}](jsonStruct interface{}) (T, error) {
 	var result T
-	c.conn.WriteJSON(jsonStruct)
-	_, message, err := c.conn.ReadMessage()
+	GlobalClient.conn.WriteJSON(jsonStruct)
+	_, message, err := GlobalClient.conn.ReadMessage()
 	if err != nil {
 		log.Println("read:", err)
-		return result
+		return result, err
 	}
 	var packetBase economy.PacketBase
 	err = json.Unmarshal(message, &packetBase)
 	if err != nil {
-		return result
+		return result, err
+	}
+	if packetBase.MessageType == "common_error_response" {
+		var commonErrorResponse economy.CommonErrorResponse
+		err = utils.MapToStruct(packetBase.Data, &commonErrorResponse)
+		return result, fmt.Errorf(commonErrorResponse.Message)
 	}
 	utils.MapToStruct(packetBase.Data, &result)
-	return result
+	fmt.Println(string(message))
+	return result, nil
 }
 
 func StartConnect() {
-	c, _, err := websocket.DefaultDialer.Dial("", nil)
+	c, _, err := websocket.DefaultDialer.Dial(URL, nil)
 	if err != nil {
 		log.Fatal("dial:", err)
 	}
 	client := &Client{conn: c}
-
-	a1 := sendRequest[economy.SetUserCreditResponse](client, economy.PacketBase{
-		MessageType: economy.Eco_Set_Credit_Request,
-		Data: economy.SetUserCreditRequest{
-			UserID: "1",
-			Credit: 100,
-		},
-	})
-
-	log.Println("id", a1.UserID, "Credit", a1.Credit)
-
-	for {
-	}
+	GlobalClient = client
 }

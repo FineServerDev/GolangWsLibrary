@@ -18,3 +18,13 @@ type AlterUserCreditResponse struct {
 	//用户唯一标识符（可能是UUID/XUID)
 	UserID string `json:"user_id"`
 }
+
+func CreateAlterUserCreditRequest(UserID string, Credit int) *PacketBase {
+	return &PacketBase{
+		MessageType: Eco_Alter_Credit_Request,
+		Data: &AlterUserCreditRequest{
+			UserID: UserID,
+			Credit: Credit,
+		},
+	}
+}

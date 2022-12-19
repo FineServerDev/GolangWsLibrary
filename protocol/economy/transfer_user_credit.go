@@ -24,3 +24,14 @@ type TransferUserCreditResponse struct {
 	//转入用户唯一标识符（可能是UUID/XUID)
 	ToUserID string `json:"to_user_id"`
 }
+
+func CreateTransferUserCreditRequest(FromUserID string, ToUserID string, Credit int) *PacketBase {
+	return &PacketBase{
+		MessageType: Eco_Transfer_Credit_Request,
+		Data: &TransferUserCreditRequest{
+			FromUserID: FromUserID,
+			ToUserID:   ToUserID,
+			Credit:     Credit,
+		},
+	}
+}

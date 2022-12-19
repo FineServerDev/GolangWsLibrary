@@ -3,5 +3,6 @@ package main
 import "GolangWsLibrary/client"
 
 func main() {
-	client.StartConnect()
+	go client.StartConnect()
+	select {}
 }
